@@ -26,7 +26,7 @@ function Recipes() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:4000/api/recipes?page=${page + 1}&limit=${limit}`)
+      .get(`https://recipes-krdj.onrender.com?page=${page + 1}&limit=${limit}`)
       .then((res) => {
         setRecipes(res.data.data);
         setTotal(res.data.total);
@@ -41,7 +41,7 @@ function Recipes() {
     if (filters.calories) query.push(`calories=${filters.caloriesOp}${filters.calories}`);
 
     const res = await axios.get(
-      `http://localhost:4000/api/recipes/search?${query.join("&")}`
+      `https://recipes-krdj.onrender.com/search?${query.join("&")}`
     );
     setRecipes(res.data.data);
     setTotal(res.data.data.length);
