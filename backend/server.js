@@ -7,7 +7,7 @@ const PORT = 4000;
 const app = express();
 
 app.use(cors({
-    origin: "https://recipes-mauve-psi.vercel.app/",
+    origin: ["https://recipes-mauve-psi.vercel.app/", "https://recipes-frontend-8xvd.onrender.com"],
     methods: ['GET', 'POST'],
 }));
 
