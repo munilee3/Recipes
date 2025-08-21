@@ -7,7 +7,7 @@ const PORT = 4000;
 const app = express();
 
 app.use(cors({
-    origin: ["https://recipes-mauve-psi.vercel.app/", "https://recipes-frontend-8xvd.onrender.com"],
+    origin: ["https://recipes-mauve-psi.vercel.app", "https://recipes-frontend-8xvd.onrender.com"],
     methods: ['GET', 'POST'],
 }));
 
@@ -56,7 +56,7 @@ app.get("/api/recipes/search", async (req, res) => {
 
   if (calories) {
     const [op, val] = calories.match(/(>=|<=|=|>|<)(\d+)/).slice(1);
-    filter["nutrients.calories"] = new RegExp(`^${val}`);
+    filter["nutrients.calories"] = { [opMap(op)]: Number(val) };
   }
 
   const data = await Recipe.find(filter);
