@@ -14,6 +14,7 @@ function Recipes() {
   const [total, setTotal] = useState(0);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [expandTime, setExpandTime] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [filters, setFilters] = useState({
     title: "",
@@ -25,12 +26,20 @@ function Recipes() {
   });
 
   useEffect(() => {
-    axios
-      .get(`https://recipes-krdj.onrender.com/api/recipes?page=${page + 1}&limit=${limit}`)
-      .then((res) => {
+    setLoading(true);
+    const fetchReciepies = async () => {
+      try {
+        const res = await axios.get(`https://recipes-krdj.onrender.com/api/recipes?page=${page + 1}&limit=${limit}`)
         setRecipes(res.data.data);
         setTotal(res.data.total);
-      });
+        setLoading(false);
+      } catch {
+        setLoading(false);
+        setRecipes(res.status)
+      }
+    }
+
+    fetchReciepies();
   }, [page, limit]);
 
   const handleSearch = async () => {
@@ -39,13 +48,14 @@ function Recipes() {
     if (filters.cuisine) query.push(`cuisine=${filters.cuisine}`);
     if (filters.rating) query.push(`rating=${filters.ratingOp}${filters.rating}`);
     if (filters.calories) query.push(`calories=${filters.caloriesOp}${filters.calories}`);
-
+    setLoading(true);
     const res = await axios.get(
-      `https://recipes-krdj.onrender.com/api/recipes/search?${query.join("&")}`
+      `https://recipes-krdj.onrender.com/api/recipes/search?${query.join("&")}&page=${page + 1}&limit=${limit}`
     );
     setRecipes(res.data.data);
     setTotal(res.data.data.length);
     setPage(0);
+    setLoading(false);
   };
 
   return (
@@ -118,23 +128,39 @@ function Recipes() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {recipes.map((r) => (
-            <TableRow
-              key={r._id}
-              onClick={() => setSelectedRecipe(r)}
-              style={{ cursor: "pointer" }}
-            >
-              <TableCell>{r.title}</TableCell>
-              <TableCell>{r.cuisine}</TableCell>
-              <TableCell>
-                <Rating value={r.rating || 0} readOnly precision={0.5} />
-              </TableCell>
-              <TableCell>{r.total_time} mins</TableCell>
-              <TableCell>{r.serves}</TableCell>
-            </TableRow>
-          ))}
+          {
+            loading ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : (
+              recipes.map((r) => (
+                <TableRow
+                  key={r._id}
+                  onClick={() => setSelectedRecipe(r)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <TableCell>{r.title}</TableCell>
+                  <TableCell>{r.cuisine}</TableCell>
+                  <TableCell>
+                    <Rating value={r.rating || 0} readOnly precision={0.5} />
+                  </TableCell>
+                  <TableCell>{r.total_time} mins</TableCell>
+                  <TableCell>{r.serves}</TableCell>
+                </TableRow>
+              ))
+            )
+          }
         </TableBody>
       </Table>
+      {!loading && recipes.length === 0 && (
+            <div style={{ fontSize: "32px", fontWeight: "bold", marginTop: "20px", display: "flex", justifyContent: "center"}}>
+              <h1>No results found</h1>
+            </div>
+          )}
+      <br />
 
       <TablePagination
         component="div"
@@ -146,11 +172,7 @@ function Recipes() {
         rowsPerPageOptions={[10, 15, 25, 50]}
       />
 
-      {recipes.length === 0 && (
-        <div style={{ fontSize: "32px", fontWeight: "bold", marginTop: "20px" }}>
-          No results found
-        </div>
-      )}
+
 
       <Drawer open={!!selectedRecipe} onClose={() => setSelectedRecipe(null)} anchor="right">
         {selectedRecipe && (
